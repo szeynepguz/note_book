@@ -81,14 +81,59 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  @override
+ @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Not Defterim'),
       ),
-      body: const Center(
-        child: Text('Sayfa Gövdesi'),
+      body: ValueListenableBuilder<Box>(
+        valueListenable: noteBox.listenable(),
+        builder: (context, box, _) {
+          if (box.isEmpty) {
+            return const Center(
+              child: Text('Henüz eklenmiş bir not yok.'),
+            );
+          }
+
+          final keys = box.keys.toList().reversed.toList();
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(12),
+            itemCount: keys.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              final note = Map<String, dynamic>.from(box.get( keys[index]));
+
+              return Card(
+                elevation: 0,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: ListTile(
+                  title: Text(
+                    note['title'] ?? '',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    note['content'] ?? '',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                    onPressed: () async {
+                      await box.delete(keys[index]);
+                    },
+                  ),
+                  onTap: () => _showNoteDialog(note: note, key: keys[index]),
+                ),
+              );
+            },
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showNoteDialog(),
+        child: const Icon(Icons.add),
       ),
     );
   }
