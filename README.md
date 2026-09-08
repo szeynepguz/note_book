@@ -1,4 +1,4 @@
-# taste_book
+# note_book
 
 A new Flutter project.
 
